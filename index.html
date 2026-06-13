@@ -1,1 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>MCN: Preterm PROM (PPROM) – Adele Pillitteri</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <style>
+        .transition-all { transition: all 0.3s ease; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #0e7c7c; border-radius: 8px; }
+        .recall-mode .reveal-text {
+            background-color: #cbd5e1;
+            color: transparent;
+            border-radius: 0.375rem;
+            padding: 0 0.25rem;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+            box-shadow: inset 0 0 0 1px #94a3b8;
+        }
+        .recall-mode .reveal-text:hover,
+        .recall-mode .reveal-text.revealed {
+            background-color: #fde047;
+            color: #1e293b;
+            box-shadow: none;
+        }
+        .content-section { animation: fade 0.3s ease; }
+        @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .locked-section { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+        .quiz-feedback-correct { background-color: #dcfce7; border-left: 4px solid #22c55e; }
+        .quiz-feedback-wrong { background-color: #fee2e2; border-left: 4px solid #ef4444; }
+        .nav-btn.active { background-color: #ccfbf1; color: #115e59; border-right: 4px solid #0f766e; }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { prom: { light: '#ccfbf1', DEFAULT: '#0f766e', dark: '#115e59' } } } }
+        }
+    </script>
+</head>
+<body class="bg-slate-50 h-screen flex flex-col md:flex-row font-sans text-slate-800 overflow-hidden">
 
+    <!-- Mobile Header -->
+    <div class="md:hidden bg-prom-dark text-white p-4 flex justify-between items-center shadow-md z-30 shrink-0">
+        <button onclick="toggleMobileMenu()" class="text-white focus:outline-none z-40"><i class="fa-solid fa-bars text-2xl"></i></button>
+        <h1 class="font-bold text-lg absolute left-1/2 transform -translate-x-1/2 pointer-events-none"><i class="fa-solid fa-water mr-2"></i> Preterm PROM</h1>
+        <div class="w-8"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <nav id="sidebar" class="hidden md:flex flex-col w-full md:w-80 bg-white shadow-2xl h-full absolute md:relative z-30 transition-all duration-300 shrink-0 border-r border-slate-200 overflow-y-auto">
+        <div class="p-6 bg-gradient-to-br from-prom-dark to-prom text-white hidden md:block shrink-0">
+            <h1 class="font-black text-2xl tracking-wide"><i class="fa-solid fa-water text-prom-light mr-2"></i> Preterm PROM</h1>
+            <p class="text-sm text-slate-300 mt-1">Adele Pillitteri · Maternal‑Child Nursing</p>
+        </div>
+        <div class="flex-1 py-4">
+            <ul class="space-y-1 text-sm font-medium">
+                <li><button onclick="showSection('home')" id="btn-home" class="nav-btn w-full text-left px-6 py-3 hover:bg-slate-50 transition-colors"><i class="fa-solid fa-house w-6 nav-icon"></i><i class="fa-solid fa-lock w-6 hidden text-slate-400"></i> Home / Start</button></li>
+                <li><button onclick="showSection('overview')" id="btn-overview" class="nav-btn w-full text-left px-6 py-3 hover:bg-slate-50 transition-colors locked-section"><i class="fa-solid fa-book-open w-6 nav-icon hidden"></i><i class="fa-solid fa-lock w-6 text-slate-400"></i> 1. Definition & Significance</button></li>
+                <li><button onclick="showSection('risk')" id="btn-risk" class="nav-btn w-full text-left px-6 py-3 hover:bg-slate-50 transition-colors locked-section"><i class="fa-solid fa-chart-line w-6 nav-icon hidden"></i><i class="fa-solid fa-lock w-6 text-slate-400"></i> 2. Risk Factors & Etiology</button></li>
+                <li><button onclick="showSection('diagnosis')" id="btn-diagnosis" class="nav-btn w-full text-left px-6 py-3 hover:bg-slate-50 transition-colors locked-section"><i class="fa-solid fa-stethoscope w-6 nav-icon hidden"></i><i class="fa-solid fa-lock w-6 text-slate-400"></i> 3. Diagnosis & Confirmation</button></li>
+                <li><button onclick="showSection('management')" id="btn-management" class="nav-btn w-full text-left px-6 py-3 hover:bg-slate-50 transition-colors locked-section"><i class="fa-solid fa-hand-holding-medical w-6 nav-icon hidden"></i><i class="fa-solid fa-lock w-6 text-slate-400"></i> 4. Management & Interventions</button></li>
+                <li><button onclick="showSection('complications')" id="btn-complications" class="nav-btn w-full text-left px-6 py-3 hover:bg-slate-50 transition-colors locked-section"><i class="fa-solid fa-exclamation-triangle w-6 nav-icon hidden"></i><i class="fa-solid fa-lock w-6 text-slate-400"></i> 5. Complications & Patient Education</button></li>
+                <li><button onclick="showSection('nursing')" id="btn-nursing" class="nav-btn w-full text-left px-6 py-3 hover:bg-slate-50 transition-colors locked-section"><i class="fa-solid fa-user-nurse w-6 nav-icon hidden"></i><i class="fa-solid fa-lock w-6 text-slate-400"></i> 6. Nursing Care & Prevention</button></li>
+                <li><button onclick="showSection('mnemonics')" id="btn-mnemonics" class="nav-btn w-full text-left px-6 py-3 hover:bg-slate-50 transition-colors locked-section"><i class="fa-solid fa-brain w-6 nav-icon hidden"></i><i class="fa-solid fa-lock w-6 text-slate-400"></i> 7. Mnemonic Appendix</button></li>
+                <li><button onclick="showSection('final_quiz_sec')" id="btn-final_quiz_sec" class="nav-btn w-full text-left px-6 py-3 hover:bg-slate-50 transition-colors border-t border-slate-200 mt-2 locked-section"><i class="fa-solid fa-graduation-cap w-6 text-amber-500 nav-icon hidden"></i><i class="fa-solid fa-lock w-6 text-slate-400"></i> Final 50‑Item Exam</button></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 h-full overflow-y-auto bg-slate-100 relative w-full">
+        <div class="fixed top-16 md:top-4 right-4 md:right-8 z-40 flex items-center bg-white/90 backdrop-blur px-4 py-3 rounded-full shadow-lg border border-slate-200 cursor-pointer hover:bg-slate-50" onclick="toggleRecallMode()">
+            <span class="mr-3 text-sm font-bold text-slate-700 hidden md:inline"><i class="fa-solid fa-brain text-prom mr-1"></i> Active Recall</span>
+            <span class="mr-3 text-sm font-bold text-slate-700 md:hidden"><i class="fa-solid fa-brain text-prom"></i></span>
+            <button id="recall-toggle" class="w-12 h-6 bg-slate-300 rounded-full relative transition-colors duration-300 focus:outline-none shadow-inner pointer-events-none">
+                <div id="recall-knob" class="w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5 transition-transform duration-300 shadow"></div>
+            </button>
+        </div>
+
+        <div class="p-4 md:p-8 max-w-6xl mx-auto pb-32">
+            <!-- HOME -->
+            <section id="home" class="content-section flex flex-col items-center justify-center min-h-[80vh] text-center block">
+                <div class="bg-gradient-to-br from-slate-800 to-prom-dark text-white rounded-3xl shadow-2xl p-10 md:p-16 w-full relative overflow-hidden">
+                    <div class="absolute top-0 right-0 -mt-10 -mr-10 text-white opacity-5"><i class="fa-solid fa-water text-[20rem]"></i></div>
+                    <div class="relative z-10">
+                        <div class="bg-white/10 backdrop-blur-sm inline-block p-4 rounded-full text-prom-light mb-6"><i class="fa-solid fa-hand-holding-heart text-5xl"></i></div>
+                        <h3 class="text-xl font-bold text-slate-300 mb-2 uppercase">Maternal‑Child Nursing · Adele Pillitteri</h3>
+                        <h1 class="text-4xl md:text-6xl font-black leading-tight drop-shadow-md">Preterm PROM</h1>
+                        <p class="text-lg max-w-2xl mx-auto mt-6 text-slate-200">Preterm Premature Rupture of Membranes – rupture of the amniotic sac before 37 weeks gestation and before the onset of labor. Major cause of perinatal morbidity. Master diagnosis, management, complications, and nursing care.</p>
+                        <button onclick="unlockFirstSection()" class="mt-10 bg-slate-600 hover:bg-slate-500 text-white font-black py-4 px-12 rounded-full shadow-xl transition-transform hover:scale-105 text-lg flex items-center mx-auto">Begin Module <i class="fa-solid fa-arrow-right ml-3"></i></button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 1: Definition & Significance -->
+            <section id="overview" class="content-section hidden">
+                <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+                    <h2 class="text-3xl font-black text-slate-800 mb-6 border-b-2 border-prom pb-3"><i class="fa-solid fa-book-open text-prom mr-4"></i> Definition & Significance</h2>
+                    <div class="bg-prom-light/20 border-l-4 border-prom p-4 rounded-r mb-6">Preterm PROM (PPROM) is the spontaneous rupture of the fetal membranes <span class="reveal-text">before 37 weeks of gestation and before the onset of labor</span>. It occurs in approximately 3% of pregnancies and is responsible for about one‑third of all preterm births.</div>
+                    <ul class="list-disc pl-6 space-y-2">
+                        <li><strong>Consequences:</strong> Preterm labor, chorioamnionitis, placental abruption, cord prolapse, neonatal sepsis, RDS, and long‑term neurodevelopmental impairment.</li>
+                        <li><strong>Gestational age matters:</strong> Outcomes improve with advancing gestational age; management differs significantly before 34 weeks vs after 34 weeks.</li>
+                    </ul>
+                    <button onclick="openQuiz('overview')" class="mt-8 w-full bg-prom text-white font-black py-4 rounded-xl shadow-md hover:bg-prom-dark transition-colors text-lg"><i class="fa-solid fa-list-check mr-3"></i> Take 10-Item Quiz (Unlocks next section)</button>
+                </div>
+            </section>
+
+            <!-- Section 2: Risk Factors & Etiology -->
+            <section id="risk" class="content-section hidden">
+                <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+                    <h2 class="text-3xl font-black text-slate-800 mb-6 border-b-2 border-prom pb-3"><i class="fa-solid fa-chart-line text-prom mr-4"></i> Risk Factors & Etiology</h2>
+                    <div class="grid md:grid-cols-2 gap-5">
+                        <div class="bg-slate-50 p-4 rounded-xl"><strong class="text-prom">👩 Maternal risk factors</strong><br>• Prior preterm birth or PPROM<br>• Genital tract infection (bacterial vaginosis, cervicitis, STIs)<br>• Short cervical length (<25 mm)<br>• Cervical insufficiency<br>• Uterine overdistension (multiple gestation, polyhydramnios)<br>• Smoking, substance abuse, low socioeconomic status</div>
+                        <div class="bg-slate-50 p-4 rounded-xl"><strong class="text-prom">🦠 Pathophysiology</strong><br>• Infection/inflammation (ascending from vagina) → release of proteases and inflammatory cytokines → membrane weakening and rupture.<br>• Decidual hemorrhage or uterine overdistension may also cause mechanical stress leading to rupture.</div>
+                    </div>
+                    <button onclick="openQuiz('risk')" class="mt-8 w-full bg-prom text-white font-black py-4 rounded-xl shadow-md hover:bg-prom-dark transition-colors text-lg"><i class="fa-solid fa-list-check mr-3"></i> Take 10-Item Quiz (Unlocks next section)</button>
+                </div>
+            </section>
+
+            <!-- Section 3: Diagnosis & Confirmation -->
+            <section id="diagnosis" class="content-section hidden">
+                <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+                    <h2 class="text-3xl font-black text-slate-800 mb-6 border-b-2 border-prom pb-3"><i class="fa-solid fa-stethoscope text-prom mr-4"></i> Diagnosis & Confirmation</h2>
+                    <ul class="list-disc pl-6 space-y-2">
+                        <li><strong>Clinical presentation:</strong> Sudden gush or persistent leakage of fluid from the vagina.</li>
+                        <li><strong>Diagnostic tests:</strong><br>• <span class="reveal-text">Sterile speculum exam</span> – visual pooling of fluid in the posterior fornix.<br>• <span class="reveal-text">Nitrazine (pH) test</span> – amniotic fluid turns nitrazine paper blue (pH 7.1–7.3).<br>• <span class="reveal-text">Ferning test</span> – amniotic fluid crystallizes into fern‑like pattern on microscope slide.<br>• <span class="reveal-text">Ultrasound</span> – low amniotic fluid index (oligohydramnios) supports diagnosis.</li>
+                        <li><strong>Differential:</strong> Urine, vaginal discharge, cervical mucus, watery leukorrhea.</li>
+                        <li><strong>Avoid digital cervical exam</strong> until active labor or delivery is planned – reduces infection risk.</li>
+                    </ul>
+                    <div class="bg-amber-50 p-2 rounded-lg mt-2 text-sm">⚠️ <strong>Important:</strong> Once PPROM is confirmed, assess for signs of infection (chorioamnionitis) and fetal well‑being.</div>
+                    <button onclick="openQuiz('diagnosis')" class="mt-8 w-full bg-prom text-white font-black py-4 rounded-xl shadow-md hover:bg-prom-dark transition-colors text-lg"><i class="fa-solid fa-list-check mr-3"></i> Take 10-Item Quiz (Unlocks next section)</button>
+                </div>
+            </section>
+
+            <!-- Section 4: Management & Interventions -->
+            <section id="management" class="content-section hidden">
+                <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+                    <h2 class="text-3xl font-black text-slate-800 mb-6 border-b-2 border-prom pb-3"><i class="fa-solid fa-hand-holding-medical text-prom mr-4"></i> Management & Interventions</h2>
+                    <ul class="list-disc pl-6 space-y-2">
+                        <li><strong>General principles:</strong> Hospitalization; monitor for infection, labor, and fetal well‑being.</li>
+                        <li><strong>Latency antibiotics:</strong> <span class="reveal-text">Ampicillin + erythromycin (or azithromycin) for 7 days</span> to prolong latency and reduce chorioamnionitis and neonatal morbidity.</li>
+                        <li><strong>Corticosteroids:</strong> Betamethasone or dexamethasone (24–34 weeks) to accelerate fetal lung maturity.</li>
+                        <li><strong>Tocolysis:</strong> May be considered for 48 hours to allow corticosteroids to take effect, if no infection and fetal benefits outweigh risks.</li>
+                        <li><strong>Gestational age‑based management:</strong><br>• <span class="reveal-text">Before 34 weeks:</span> Expectant management with antibiotics and corticosteroids.<br>• <span class="reveal-text">34–36⁶⁄⁷ weeks:</span> Expectant management or induction depending on maternal/fetal status.<br>• <span class="reveal-text">≥37 weeks:</span> Term PROM – induction recommended.</li>
+                        <li><strong>Chorioamnionitis:</strong> Prompt delivery regardless of gestational age; broad‑spectrum antibiotics.</li>
+                        <li><strong>Group B Streptococcus (GBS) prophylaxis</strong> – indicated after rupture.</li>
+                    </ul>
+                    <button onclick="openQuiz('management')" class="mt-8 w-full bg-prom text-white font-black py-4 rounded-xl shadow-md hover:bg-prom-dark transition-colors text-lg"><i class="fa-solid fa-list-check mr-3"></i> Take 10-Item Quiz (Unlocks next section)</button>
+                </div>
+            </section>
+
+            <!-- Section 5: Complications & Patient Education -->
+            <section id="complications" class="content-section hidden">
+                <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+                    <h2 class="text-3xl font-black text-slate-800 mb-6 border-b-2 border-prom pb-3"><i class="fa-solid fa-exclamation-triangle text-prom mr-4"></i> Maternal & Fetal Complications</h2>
+                    <div class="grid md:grid-cols-2 gap-5">
+                        <div class="bg-slate-50 p-4 rounded-xl"><strong class="text-prom">👩 Maternal</strong><br>• Chorioamnionitis (fever, uterine tenderness, maternal/fetal tachycardia)<br>• Endometritis, sepsis<br>• Placental abruption<br>• Postpartum hemorrhage</div>
+                        <div class="bg-slate-50 p-4 rounded-xl"><strong class="text-prom">👶 Fetal/Neonatal</strong><br>• Preterm birth complications (RDS, IVH, NEC, sepsis)<br>• Pulmonary hypoplasia (if prolonged oligohydramnios)<br>• Cord prolapse (especially if malpresentation)<br>• Neonatal infection (early‑onset sepsis)</div>
+                    </div>
+                    <ul class="list-disc pl-6 mt-3 space-y-1">
+                        <li><strong>Patient education for PPROM:</strong> Hospitalization likely; strict bed rest not proven beneficial but avoid digital stimulation; report fever, chills, abdominal pain, foul discharge; understand signs of labor and infection.</li>
+                    </ul>
+                    <button onclick="openQuiz('complications')" class="mt-8 w-full bg-prom text-white font-black py-4 rounded-xl shadow-md hover:bg-prom-dark transition-colors text-lg"><i class="fa-solid fa-list-check mr-3"></i> Take 10-Item Quiz (Unlocks next section)</button>
+                </div>
+            </section>
+
+            <!-- Section 6: Nursing Care & Prevention -->
+            <section id="nursing" class="content-section hidden">
+                <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+                    <h2 class="text-3xl font-black text-slate-800 mb-6 border-b-2 border-prom pb-3"><i class="fa-solid fa-user-nurse text-prom mr-4"></i> Nursing Care & Prevention</h2>
+                    <ul class="list-disc pl-6 space-y-2">
+                        <li><strong>Assessment:</strong> Monitor vital signs (fever), uterine tenderness, fetal heart rate, leakage amount, contraction frequency, signs of chorioamnionitis.</li>
+                        <li><strong>Interventions:</strong> Administer antibiotics, corticosteroids, tocolytics as ordered; maintain strict perineal hygiene (no tampons, no intercourse, no digital exams); provide emotional support and education.</li>
+                        <li><strong>Prevention strategies:</strong> Treat bacterial vaginosis and other infections; progesterone for short cervix; cervical cerclage for cervical insufficiency; smoking cessation.</li>
+                        <li><strong>Discharge teaching if sent home (rarely, only with stable, very early PPROM without infection):</strong> Daily temperature monitoring, fetal kick counts, report any fever, fluid leakage increase, contractions.</li>
+                    </ul>
+                    <div class="bg-blue-50 p-2 rounded-lg mt-2 text-sm">📌 <strong>Documentation:</strong> Time of rupture, fluid characteristics (color, odor), fetal heart rate pattern, maternal vitals, medications given.</div>
+                    <button onclick="openQuiz('nursing')" class="mt-8 w-full bg-prom text-white font-black py-4 rounded-xl shadow-md hover:bg-prom-dark transition-colors text-lg"><i class="fa-solid fa-list-check mr-3"></i> Take 10-Item Quiz (Unlocks next section)</button>
+                </div>
+            </section>
+
+            <!-- Section 7: Mnemonics -->
+            <section id="mnemonics" class="content-section hidden">
+                <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+                    <h2 class="text-3xl font-black text-slate-800 mb-6 border-b-2 border-prom pb-3"><i class="fa-solid fa-brain text-prom mr-4"></i> Mnemonic Appendix</h2>
+                    <div class="overflow-x-auto rounded-xl border">
+                        <table class="w-full text-left text-sm md:text-base"><thead class="bg-prom-dark text-white"><tr><th class="p-3">Topic</th><th class="p-3">Mnemonic</th><th class="p-3">Meaning</th></tr></thead>
+                        <tbody><tr><td class="p-3 font-semibold">PPROM definition</span></td><td class="font-black"><37 weeks, before labor</span></td><td class="reveal-text">Rupture of membranes before 37 weeks and before onset of labor</span></td>
+                        <tr class="bg-slate-50"><td class="p-3 font-semibold">Diagnostic tests</span></td><td class="font-black">N F U</span></td><td class="reveal-text">Nitrazine (pH), Ferning, Ultrasound (low fluid)</span></td>
+                        <tr><td class="p-3 font-semibold">Latency antibiotics</span></td><td class="font-black">A E</span></td><td class="reveal-text">Ampicillin + Erythromycin (or azithromycin) for 7 days</span></td>
+                        <tr class="bg-slate-50"><td class="p-3 font-semibold">Risk factors</span></td><td class="font-black">I S U</span></td><td class="reveal-text">Infection, Short cervix, Uterine overdistension</span></td>
+                        <tr><td class="p-3 font-semibold">Signs of chorioamnionitis</span></td><td class="font-black">F U T</span></td><td class="reveal-text">Fever, Uterine tenderness, Tachycardia (maternal/fetal)</span></td>
+                        </tbody>
+                    </table>
+                    <button onclick="openQuiz('final_quiz')" class="mt-8 w-full bg-amber-500 text-slate-900 font-black py-4 rounded-xl shadow-md hover:bg-amber-400 text-lg"><i class="fa-solid fa-graduation-cap mr-3"></i> Take Final 50‑Item Exam</button>
+                </div>
+            </section>
+
+            <!-- Final Quiz Section -->
+            <section id="final_quiz_sec" class="content-section hidden">
+                <div class="bg-white rounded-2xl shadow-lg p-8 text-center min-h-[60vh] flex flex-col justify-center items-center">
+                    <i class="fa-solid fa-graduation-cap text-8xl text-amber-400 mb-6"></i>
+                    <h2 class="text-4xl font-black text-slate-800 mb-4">Final 50‑Item Exam</h2>
+                    <p class="text-lg text-slate-600 mb-8">Covers all 6 sections. 75% required to pass.</p>
+                    <button onclick="openQuiz('final_quiz')" class="w-full max-w-md bg-prom-dark text-white font-black py-4 rounded-xl shadow-md hover:bg-prom text-xl">Start Final Exam</button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Quiz Modal -->
+    <div id="quiz-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
+        <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl p-6 md:p-8 relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeQuiz()" class="absolute top-4 right-4 text-slate-400 hover:text-red-500"><i class="fa-solid fa-xmark text-2xl"></i></button>
+            <h2 id="quiz-title" class="text-3xl font-black text-slate-800 mb-2"></h2>
+            <p class="text-slate-600 mb-6 font-medium border-b pb-4">Score ≥75% to unlock next section.</p>
+            <div id="quiz-questions-container" class="space-y-4"></div>
+            <button id="quiz-submit-btn" onclick="submitQuiz()" class="mt-8 w-full bg-prom text-white font-bold py-4 rounded-xl shadow-lg text-lg">Submit Answers</button>
+            <div id="quiz-result-container" class="hidden mt-6 p-4 rounded-xl bg-slate-100 border"></div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            let unlockedSections = ['home'];
+            // Quiz data – 10 questions each for 6 sections (overview, risk, diagnosis, management, complications, nursing)
+            const quizzes = {
+                overview: {
+                    title: "Quiz 1: Definition & Significance (10 items)",
+                    next: "risk",
+                    questions: [
+                        { q: "PPROM is defined as rupture of membranes before:", options: ["20 weeks", "37 weeks", "34 weeks", "40 weeks"], ans: 1 },
+                        { q: "PPROM occurs in approximately what percentage of pregnancies?", options: ["0.5%", "3%", "10%", "15%"], ans: 1 },
+                        { q: "PPROM is responsible for what proportion of preterm births?", options: ["5%", "One‑third", "Half", "75%"], ans: 1 },
+                        { q: "The primary goal of expectant management in PPROM before 34 weeks is to:", options: ["Deliver immediately", "Prolong latency and administer corticosteroids", "Induce labor", "Perform cesarean"], ans: 1 },
+                        { q: "Which of the following is NOT a neonatal complication of PPROM?", options: ["Respiratory distress syndrome", "Necrotizing enterocolitis", "Post‑term syndrome", "Sepsis"], ans: 2 },
+                        { q: "Latency is defined as:", options: ["Time from PROM to delivery", "Time from delivery to discharge", "Gestational age at rupture", "Membrane resealing"], ans: 0 },
+                        { q: "PPROM significantly increases the risk of:", options: ["Placenta previa", "Chorioamnionitis and preterm labor", "Gestational diabetes", "Macrosomia"], ans: 1 },
+                        { q: "Management of PPROM at 32 weeks typically includes:", options: ["Immediate cesarean", "Expectant management with antibiotics and corticosteroids", "Induction of labor", "Outpatient observation"], ans: 1 },
+                        { q: "The threshold for recommending delivery in PPROM after 34 weeks is often:", options: ["Immediate induction", "Expectant management until 36 weeks", "No intervention", "Home care"], ans: 0 },
+                        { q: "PPROM before 24 weeks carries a high risk of:", options: ["Maternal hypertension", "Pulmonary hypoplasia and neonatal death", "Polyhydramnios", "Gestational diabetes"], ans: 1 }
+                    ]
+                },
+                risk: {
+                    title: "Quiz 2: Risk Factors & Etiology (10 items)",
+                    next: "diagnosis",
+                    questions: [
+                        { q: "Which of the following is a known risk factor for PPROM?", options: ["Primiparity", "Bacterial vaginosis", "Low maternal age", "Regular exercise"], ans: 1 },
+                        { q: "Uterine overdistension (e.g., multiple gestation) increases PPROM risk because:", options: ["It increases amniotic fluid pressure and membrane stress", "It decreases cervical length", "It causes hormonal changes", "It leads to fetal anomalies"], ans: 0 },
+                        { q: "The most common mechanism of PPROM is:", options: ["Trauma", "Ascending infection/inflammation", "Placental abruption", "Uterine rupture"], ans: 1 },
+                        { q: "Which of the following is a modifiable risk factor for PPROM?", options: ["Prior preterm birth", "Short cervix", "Smoking", "Uterine anomaly"], ans: 2 },
+                        { q: "A short cervix on ultrasound (≤25 mm) is a risk factor for:", options: ["PPROM, preterm labor, and cervical insufficiency", "Macrosomia", "Polyhydramnios", "Post‑term pregnancy"], ans: 0 },
+                        { q: "Women with prior PPROM have a recurrence risk of approximately:", options: ["5%", "15–30%", "50%", "80%"], ans: 1 },
+                        { q: "Which organism is commonly associated with ascending infection leading to PPROM?", options: ["E. coli", "Group B Streptococcus", "Ureaplasma urealyticum", "All of the above"], ans: 3 },
+                        { q: "Cervical insufficiency predisposes to PPROM because:", options: ["The cervix cannot maintain closure, allowing bacteria to ascend", "It causes uterine overdistension", "It leads to polyhydramnios", "It increases placental size"], ans: 0 },
+                        { q: "Which of the following is NOT a risk factor for PPROM?", options: ["Low socioeconomic status", "Prior term delivery", "Polyhydramnios", "Placenta previa"], ans: 1 },
+                        { q: "Nutritional deficiencies (e.g., low vitamin C) are associated with PPROM due to:", options: ["Impaired collagen synthesis and membrane strength", "Increased uterine contractility", "Fetal growth restriction", "Maternal anemia"], ans: 0 }
+                    ]
+                },
+                diagnosis: {
+                    title: "Quiz 3: Diagnosis & Confirmation (10 items)",
+                    next: "management",
+                    questions: [
+                        { q: "The initial diagnostic test for suspected PPROM is:", options: ["Transvaginal ultrasound", "Sterile speculum examination with pooling assessment", "Digital cervical exam", "Magnetic resonance imaging"], ans: 1 },
+                        { q: "Amniotic fluid turns nitrazine paper what color?", options: ["Yellow", "Blue", "Pink", "Green"], ans: 1 },
+                        { q: "The ferning test is positive when:", options: ["Cervical mucus shows no pattern", "Amniotic fluid dries into a fern‑like crystal pattern", "Urine crystallizes", "Blood is present"], ans: 1 },
+                        { q: "Which finding on ultrasound supports the diagnosis of PPROM?", options: ["Polyhydramnios", "Oligohydramnios (low amniotic fluid)", "Normal fluid", "Placenta previa"], ans: 1 },
+                        { q: "Which of the following should be avoided in a patient with suspected PPROM?", options: ["Ultrasound", "Speculum exam", "Digital cervical examination", "Fetal heart rate monitoring"], ans: 2 },
+                        { q: "A false‑positive nitrazine test can occur with:", options: ["Blood, semen, alkaline urine", "Normal amniotic fluid", "Fetal hair", "Vernix"], ans: 0 },
+                        { q: "The sterile speculum exam is preferred over digital exam because digital exam:", options: ["Is more accurate", "Increases risk of infection and does not change management", "Is painful", "Cannot detect rupture"], ans: 1 },
+                        { q: "A patient reports a gush of fluid. The nurse notes the fluid is clear and smells sweet. This suggests:", options: ["Urine", "Amniotic fluid", "Vaginal discharge", "Blood"], ans: 1 },
+                        { q: "If the diagnosis of PPROM is uncertain, additional testing may include:", options: ["Amniotic fluid index (AFI)", "Fetal fibronectin or placental alpha microglobulin‑1 (AmniSure)", "Kick count", "Fundal height"], ans: 1 },
+                        { q: "Maternal temperature, uterine tenderness, and foul fluid indicate:", options: ["Normal PPROM", "Chorioamnionitis", "Preterm labor", "Placental abruption"], ans: 1 }
+                    ]
+                },
+                management: {
+                    title: "Quiz 4: Management & Interventions (10 items)",
+                    next: "complications",
+                    questions: [
+                        { q: "Latency antibiotics for PPROM (ampicillin + erythromycin) are given to:", options: ["Cure infection", "Prolong the time from rupture to delivery and reduce neonatal morbidity", "Induce labor", "Prevent preterm birth permanently"], ans: 1 },
+                        { q: "Corticosteroids (betamethasone) are indicated for PPROM at gestational ages:", options: ["<34 weeks", "<37 weeks", "Any gestation", "Only after 37 weeks"], ans: 0 },
+                        { q: "A woman with PPROM at 33 weeks, no signs of infection, should be managed with:", options: ["Immediate induction", "Expectant management + antibiotics + corticosteroids", "Outpatient observation", "Cesarean section"], ans: 1 },
+                        { q: "In a patient with PPROM and chorioamnionitis, the appropriate action is:", options: ["Antibiotics only", "Immediate delivery regardless of gestational age", "Continue expectant management", "Administer tocolytics"], ans: 1 },
+                        { q: "Group B Streptococcus prophylaxis should be given to women with PPROM if:", options: ["GBS status positive or unknown", "Only if GBS positive", "Never", "Only after 35 weeks"], ans: 0 },
+                        { q: "Tocolysis in PPROM is used to:", options: ["Prolong pregnancy for weeks", "Delay delivery for 48 hours to complete corticosteroids", "Stop labor indefinitely", "Induce labor"], ans: 1 },
+                        { q: "At what gestational age is delivery recommended for PPROM after 34 weeks?", options: ["Immediate induction or cesarean as appropriate", "Continue expectant management to 37 weeks", "Discharge home", "Only if infection develops"], ans: 0 },
+                        { q: "Antibiotics for PPROM should be administered for how long?", options: ["24 hours", "7 days (or until delivery)", "2 weeks", "48 hours"], ans: 1 },
+                        { q: "A patient with PPROM at 32 weeks has contractions. The nurse should first:", options: ["Discharge home", "Assess for chorioamnionitis, consider tocolysis and corticosteroids", "Start oxytocin", "Perform cesarean"], ans: 1 },
+                        { q: "Which of the following is NOT part of expectant management of PPROM before 34 weeks?", options: ["Corticosteroids", "Antibiotics", "Digital cervical exams every shift", "Monitor for infection"], ans: 2 }
+                    ]
+                },
+                complications: {
+                    title: "Quiz 5: Complications & Patient Education (10 items)",
+                    next: "nursing",
+                    questions: [
+                        { q: "The most common infectious complication of PPROM is:", options: ["Endometritis", "Chorioamnionitis", "Pyelonephritis", "Mastitis"], ans: 1 },
+                        { q: "Prolonged oligohydramnios after PPROM can lead to:", options: ["Polyhydramnios", "Pulmonary hypoplasia and skeletal deformities (Potter's sequence)", "Macrosomia", "Placenta previa"], ans: 1 },
+                        { q: "Cord prolapse is more likely in PPROM if:", options: ["Fetus is in cephalic presentation", "Breech or transverse lie, or unengaged presenting part", "Normal amniotic fluid volume", "Term gestation"], ans: 1 },
+                        { q: "Neonatal sepsis from PPROM is most commonly caused by:", options: ["Group B Streptococcus", "E. coli", "Listeria", "All of the above"], ans: 3 },
+                        { q: "A sign of chorioamnionitis includes:", options: ["Maternal fever >38°C, uterine tenderness, fetal tachycardia", "Absence of contractions", "Clear fluid", "Normal WBC"], ans: 0 },
+                        { q: "Which of the following should be taught to a patient with PPROM discharged home (rare)?", options: ["Monitor temperature, report fever, increased leakage, contractions, or foul discharge", "Daily intercourse is fine", "No need for follow‑up", "Ignore any symptoms"], ans: 0 },
+                        { q: "A patient with PPROM at 24 weeks is at high risk for:", options: ["Pulmonary hypoplasia and severe prematurity", "Macrosomia", "Post‑term pregnancy", "Preeclampsia"], ans: 0 },
+                        { q: "Placental abruption risk is increased in PPROM because:", options: ["Sudden decompression of the uterus can cause shearing forces", "Infection causes abruption", "Uterine overdistension", "Fetal growth restriction"], ans: 0 },
+                        { q: "Fetal sepsis after PPROM is associated with:", options: ["Low Apgar scores", "Neonatal intensive care admission", "Long‑term neurodevelopmental impairment", "All of the above"], ans: 3 },
+                        { q: "The nurse should instruct the patient with PPROM to avoid:", options: ["Bed rest with bathroom privileges", "Tub baths, sexual intercourse, and tampons", "Fetal kick counts", "Hydration"], ans: 1 }
+                    ]
+                },
+                nursing: {
+                    title: "Quiz 6: Nursing Care & Prevention (10 items)",
+                    next: "mnemonics",
+                    questions: [
+                        { q: "When caring for a patient with PPROM, the nurse should monitor for signs of chorioamnionitis including:", options: ["Fever, maternal/fetal tachycardia, uterine tenderness", "Decreased fetal movement only", "Weight gain", "Headache"], ans: 0 },
+                        { q: "The nurse should administer antenatal corticosteroids for PPROM at 30 weeks as ordered because they:", options: ["Stop labor", "Accelerate fetal lung maturity and reduce RDS", "Prevent infection", "Increase amniotic fluid"], ans: 1 },
+                        { q: "To prevent infection in a patient with PPROM, the nurse should:", options: ["Perform routine digital exams", "Maintain strict perineal hygiene, avoid internal exams unless necessary", "Encourage tampon use", "Administer prophylactic antibiotics only after delivery"], ans: 1 },
+                        { q: "The nurse should educate the patient that if she feels a 'bulging' in the vagina or a sudden increase in leakage, she should:", options: ["Ignore it", "Call the nurse immediately (possible cord prolapse)", "Push it back in", "Ambulate more"], ans: 1 },
+                        { q: "A patient with PPROM and contractions at 32 weeks is receiving tocolysis. The nurse should monitor for:", options: ["Maternal hypotension and tachycardia (nifedipine side effects)", "Hyperglycemia", "Polyhydramnios", "Fetal macrosomia"], ans: 0 },
+                        { q: "Fetal heart rate monitoring in PPROM is important to detect:", options: ["Cord compression (variable decelerations) and infection (tachycardia)", "Early decelerations only", "Accelerations", "No changes"], ans: 0 },
+                        { q: "The nurse should document all EXCEPT which regarding PPROM?", options: ["Time of rupture, fluid color and odor, maternal vital signs", "Fetal heart rate pattern", "Father's occupation", "Contraction frequency"], ans: 2 },
+                        { q: "Prevention of PPROM includes:", options: ["Treating bacterial vaginosis, smoking cessation, progesterone for short cervix", "Routine digital exams", "Universal antibiotics", "Bed rest for all"], ans: 0 },
+                        { q: "A patient with PPROM at 28 weeks is being discharged to a high‑risk obstetrical unit. The nurse should teach about:", options: ["Signs of infection and when to call", "Induction of labor", "Normal activity", "No restrictions"], ans: 0 },
+                        { q: "The primary reason to avoid digital cervical exams in PPROM is to:", options: ["Prevent pain", "Reduce risk of ascending infection and chorioamnionitis", "Maintain patient comfort", "Avoid fetal injury"], ans: 1 }
+                    ]
+                }
+            };
+            
+            // Build final 50‑item exam (10 from each of 6 sections)
+            let finalQuestions = [];
+            for(let sec of ['overview','risk','diagnosis','management','complications','nursing']) {
+                finalQuestions = finalQuestions.concat(quizzes[sec].questions.slice(0,9));
+            }
+            // ensure 50 exactly
+            while(finalQuestions.length < 50) finalQuestions.push({ q: "What is the recommended latency antibiotic regimen for PPROM before 34 weeks?", options: ["Ampicillin + erythromycin", "Penicillin alone", "Ceftriaxone", "Metronidazole"], ans: 0 });
+            quizzes['final_quiz'] = { title: "Final 50‑Item Exam: Preterm PROM", next: null, questions: finalQuestions.slice(0,50) };
+            
+            // Global functions
+            window.unlockedSections = unlockedSections;
+            window.quizzes = quizzes;
+            
+            window.unlockFirstSection = function() {
+                if(!unlockedSections.includes('overview')) {
+                    unlockedSections.push('overview');
+                    updateSidebarUI();
+                }
+                showSection('overview');
+            };
+            
+            window.showSection = function(id) {
+                if(!unlockedSections.includes(id) && id !== 'home') {
+                    alert("Complete the previous section quiz (≥75%) to unlock this content.");
+                    return;
+                }
+                document.querySelectorAll('.content-section').forEach(el => el.classList.add('hidden'));
+                const target = document.getElementById(id);
+                if(target) target.classList.remove('hidden');
+                document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+                const activeBtn = document.getElementById('btn-'+id);
+                if(activeBtn) activeBtn.classList.add('active');
+                if(window.innerWidth < 768) document.getElementById('sidebar')?.classList.add('hidden');
+                document.querySelector('main').scrollTop = 0;
+            };
+            
+            function updateSidebarUI() {
+                const all = ['home','overview','risk','diagnosis','management','complications','nursing','mnemonics','final_quiz_sec'];
+                all.forEach(sec => {
+                    const btn = document.getElementById('btn-'+sec);
+                    if(!btn) return;
+                    const lockIcon = btn.querySelector('.fa-lock'), mainIcon = btn.querySelector('.nav-icon');
+                    if(unlockedSections.includes(sec) || sec === 'home') {
+                        btn.classList.remove('locked-section');
+                        if(lockIcon) lockIcon.classList.add('hidden');
+                        if(mainIcon) mainIcon.classList.remove('hidden');
+                    } else {
+                        btn.classList.add('locked-section');
+                        if(lockIcon) lockIcon.classList.remove('hidden');
+                        if(mainIcon) mainIcon.classList.add('hidden');
+                    }
+                });
+            }
+            
+            let currentQuiz = null;
+            window.openQuiz = function(sectionId) {
+                currentQuiz = sectionId;
+                const qd = quizzes[sectionId];
+                if(!qd) return;
+                document.getElementById('quiz-title').innerText = qd.title;
+                const container = document.getElementById('quiz-questions-container');
+                container.innerHTML = '';
+                qd.questions.forEach((q, idx) => {
+                    let html = `<div class="bg-slate-50 p-4 rounded-xl border mb-4"><p class="font-bold mb-3">${idx+1}. ${q.q}</p><div class="space-y-2">`;
+                    q.options.forEach((opt, oi) => {
+                        html += `<label class="flex items-center space-x-3 p-2 rounded-lg hover:bg-white cursor-pointer"><input type="radio" name="q${idx}" value="${oi}" class="form-radio text-prom"><span>${opt}</span></label>`;
+                    });
+                    html += `</div><div class="feedback-${idx} text-sm mt-2 hidden"></div></div>`;
+                    container.innerHTML += html;
+                });
+                document.getElementById('quiz-submit-btn').classList.remove('hidden');
+                document.getElementById('quiz-result-container').classList.add('hidden');
+                document.getElementById('quiz-modal').classList.remove('hidden');
+            };
+            
+            window.closeQuiz = function() { document.getElementById('quiz-modal').classList.add('hidden'); };
+            
+            window.submitQuiz = function() {
+                const qd = quizzes[currentQuiz];
+                if(!qd) return;
+                let score = 0;
+                for(let i = 0; i < qd.questions.length; i++) {
+                    const selected = document.querySelector(`input[name="q${i}"]:checked`);
+                    const isCorrect = selected && parseInt(selected.value) === qd.questions[i].ans;
+                    if(isCorrect) score++;
+                    const fbDiv = document.querySelector(`.feedback-${i}`);
+                    if(fbDiv) {
+                        fbDiv.classList.remove('hidden');
+                        const correctAns = qd.questions[i].options[qd.questions[i].ans];
+                        if(isCorrect) {
+                            fbDiv.innerHTML = `<span class="text-green-700"><i class="fa-regular fa-circle-check"></i> Correct!</span>`;
+                            fbDiv.parentElement?.classList.add('quiz-feedback-correct');
+                            fbDiv.parentElement?.classList.remove('quiz-feedback-wrong');
+                        } else {
+                            const selectedText = selected ? qd.questions[i].options[parseInt(selected.value)] : "No answer";
+                            fbDiv.innerHTML = `<span class="text-red-700"><i class="fa-regular fa-circle-xmark"></i> Incorrect. Correct: ${correctAns}. Your answer: ${selectedText}</span>`;
+                            fbDiv.parentElement?.classList.add('quiz-feedback-wrong');
+                            fbDiv.parentElement?.classList.remove('quiz-feedback-correct');
+                        }
+                    }
+                }
+                const percent = (score / qd.questions.length) * 100;
+                const resultDiv = document.getElementById('quiz-result-container');
+                const btn = document.getElementById('quiz-submit-btn');
+                btn.classList.add('hidden');
+                resultDiv.classList.remove('hidden');
+                if(percent >= 75) {
+                    if(currentQuiz === 'final_quiz') {
+                        resultDiv.innerHTML = `<div class="text-amber-500 text-6xl text-center">🏆</div><h3 class="text-2xl font-black text-center">Mastery Achieved!</h3><p class="text-center">Score ${score}/${qd.questions.length} (${percent}%)</p><p class="text-center text-green-700">You have mastered Preterm PROM based on Adele Pillitteri.</p><button onclick="closeQuiz()" class="mt-4 w-full bg-prom text-white py-2 rounded-lg">Close</button>`;
+                        return;
+                    }
+                    if(qd.next && !unlockedSections.includes(qd.next)) {
+                        unlockedSections.push(qd.next);
+                        if(qd.next === 'mnemonics') unlockedSections.push('final_quiz_sec');
+                        updateSidebarUI();
+                    }
+                    resultDiv.innerHTML = `<div class="text-green-600 text-5xl text-center">✓</div><h3 class="text-2xl font-black text-center">Passed!</h3><p class="text-center">Score ${score}/${qd.questions.length} (${percent}%)</p><button onclick="closeQuiz(); showSection('${qd.next}')" class="mt-4 w-full bg-green-600 text-white py-2 rounded-lg">Unlock Next Section</button>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="text-red-500 text-5xl text-center">✗</div><h3 class="text-2xl font-black text-center">Failed</h3><p class="text-center">Score ${score}/${qd.questions.length} (${percent}%). Need 75%.</p><button onclick="openQuiz('${currentQuiz}')" class="mt-4 w-full bg-slate-600 text-white py-2 rounded-lg">Try Again</button>`;
+                }
+            };
+            
+            window.toggleRecallMode = function() {
+                const active = !document.body.classList.contains('recall-mode');
+                const toggle = document.getElementById('recall-toggle'), knob = document.getElementById('recall-knob');
+                if(active) {
+                    document.body.classList.add('recall-mode');
+                    toggle.classList.add('bg-prom');
+                    knob.classList.add('translate-x-6');
+                } else {
+                    document.body.classList.remove('recall-mode');
+                    toggle.classList.remove('bg-prom');
+                    knob.classList.remove('translate-x-6');
+                }
+            };
+            
+            window.toggleMobileMenu = function() {
+                const s = document.getElementById('sidebar');
+                if(s.classList.contains('hidden')) s.classList.remove('hidden');
+                else s.classList.add('hidden');
+            };
+            
+            document.addEventListener('DOMContentLoaded', () => {
+                updateSidebarUI();
+                document.querySelectorAll('.reveal-text').forEach(el => {
+                    el.addEventListener('click', function() {
+                        if(document.body.classList.contains('recall-mode')) this.classList.toggle('revealed');
+                    });
+                });
+            });
+        })();
+    </script>
+</body>
+</html>
